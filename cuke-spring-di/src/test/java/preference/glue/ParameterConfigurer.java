@@ -1,50 +1,24 @@
 package preference.glue;
 
 import java.lang.reflect.Type;
-import java.util.Locale;
-import java.util.Map;
 
-import io.cucumber.core.api.TypeRegistry;
-import io.cucumber.core.api.TypeRegistryConfigurer;
-import io.cucumber.cucumberexpressions.ParameterByTypeTransformer;
-import io.cucumber.datatable.TableCellByTypeTransformer;
-import io.cucumber.datatable.TableEntryByTypeTransformer;
-import io.cucumber.datatable.dependency.com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.JavaType;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
-public class ParameterConfigurer implements TypeRegistryConfigurer {
+import io.cucumber.java.DefaultDataTableCellTransformer;
+import io.cucumber.java.DefaultDataTableEntryTransformer;
+import io.cucumber.java.DefaultParameterTransformer;
 
-	@Override
-	public void configureTypeRegistry(TypeRegistry typeRegistry) {
+public class ParameterConfigurer {
 
-		JacksonTransformer jacksonTransformer = new JacksonTransformer();
-		typeRegistry.setDefaultParameterTransformer(jacksonTransformer);
-		typeRegistry.setDefaultDataTableEntryTransformer(jacksonTransformer);
-		typeRegistry.setDefaultDataTableCellTransformer(jacksonTransformer);
-	}
+	private final ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
 
-	@Override
-	public Locale locale() {
-		return Locale.ENGLISH;
-	}
-
-	private static final class JacksonTransformer
-			implements ParameterByTypeTransformer, TableEntryByTypeTransformer, TableCellByTypeTransformer {
-
-		private final ObjectMapper objectMapper = new ObjectMapper();
-
-		@Override
-		public Object transform(String value, Type type) {
-			return objectMapper.convertValue(value, objectMapper.constructType(type));
-		}
-
-		@Override
-		public <T> T transform(Map<String, String> entry, Class<T> type, TableCellByTypeTransformer cellTransformer) {
-			return objectMapper.convertValue(entry, type);
-		}
-
-		@Override
-		public <T> T transform(String value, Class<T> cellType) {
-			return objectMapper.convertValue(value, cellType);
-		}
+	@DefaultParameterTransformer
+	@DefaultDataTableEntryTransformer
+	@DefaultDataTableCellTransformer
+	public Object defaultTransformer(Object fromValue, Type toValueType) {
+		JavaType javaType = objectMapper.constructType(toValueType);
+		return objectMapper.convertValue(fromValue, javaType);
 	}
 }

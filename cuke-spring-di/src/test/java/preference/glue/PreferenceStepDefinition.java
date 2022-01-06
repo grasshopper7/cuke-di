@@ -5,17 +5,19 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 
 import io.cucumber.java.en.Given;
+import io.cucumber.spring.CucumberContextConfiguration;
 import preference.config.Config;
 import preference.data.Border;
 import preference.data.Font;
 
+@CucumberContextConfiguration
 @ContextConfiguration(classes = { Config.class })
 @DirtiesContext
 public class PreferenceStepDefinition {
-	
+
 	@Autowired
 	private Font font;
-	
+
 	@Autowired
 	private Border border;
 
